@@ -20,7 +20,111 @@
 - Query
 
 ---
+## Motivation
 
+Common Application Architecture
+
+![Common Application Architecture](images/app-architecture.png)
+
+---
+## Motivation
+
+Common Application Architecture
+
+- Presentation layer
+  - Communication interface to external entities
+  - “View” in the model-view-controller
+- Service layer (Application logic layer)
+  - Implements operations requested by clients through the presentation layer
+  - Represents the “business logic”
+- Persistence layer(Data access layer)
+  - Deals with different data sources
+  - Responsible for storing and retrieving data
+
+---
+
+## JDBC
+
+Inserting Data
+
+```java
+Connection conn = null;
+PreparedStatement stmt = null;
+try {
+    conn = connection();
+    stmt = conn.prepareStatement( "INSERT INTO employee VALUES(?, ?, ?)" );
+    stmt.setInt( 1, employee.getId() );
+    stmt.setString( 2, employee.getFirstName() );
+    stmt.setString( 3, employee.getLastName() );
+    stmt.executeUpdate();
+    stmt.close();
+} catch (Exception e) {
+    e.printStackTrace();
+} finally {
+    if (stmt != null) {
+        stmt.close();
+    }
+    if (conn != null) {
+        conn.close();
+    }
+}
+```
+---
+
+## JDBC
+
+Retrieving Data
+
+```
+Connection conn = null;
+PreparedStatement stmt = null;
+ResultSet rs = null;
+try {
+    conn = connection();
+    stmt = conn.prepareStatement( "SELECT id, first_name, last_name FROM employee WHERE id=?" );
+    stmt.setInt( 1, id );
+    rs = stmt.executeQuery();
+    rs.next();
+    Employee employee = new Employee();
+    employee.setId( rs.getInt( 1 ) );
+    employee.setFirstName( rs.getString( 2 ) );
+    employee.setLastName( rs.getString( 3 ) );
+    rs.close();
+    stmt.close();
+    return employee;
+} catch (Exception e) {
+    e.printStackTrace();
+} finally {
+    …
+}
+```
+---
+## JDBC Drawbacks
+
+- Too much boilerplate code
+- Manual mapping
+
+---
+## Object Relational Mapping (ORM) Goals
+
+- Focus on business concepts, not on the relational database structure
+- Abstract from the “by-hand” communication with the DB (e.g., via JDBC)
+- Portability
+  - ORM should be mostly DB independent
+  - Query abstractions using e.g. JPQL or HQL - the vendor specific SQL is auto-generated
+- Performance
+  - Object and query caching is automatically done by the ORM
+---
+## ORM Framework
+
+- JBoss Hibernate(200)
+- iBATIS (2002)
+- TopLink (1998)
+
+---
+## JPA
+![JEE Stacks](images/jee-stacks.png) <!-- .element: style="width:70%;" -->
+---
 ## Java Persistence Requirements
 
 - Simplification of the persistence model
