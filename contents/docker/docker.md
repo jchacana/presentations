@@ -120,8 +120,29 @@ Test everything with `` docker-compose up ``. Your docker app should be up and r
 ![](images/spring-docker.png) <!-- .element: height="350px" -->
 
 ---
+
 # Integrate with CI
 
+---
+
+The following section will cover the creation of a CI server on AWS. This server will be OK for testing purposes. For a production-ready, you'll probably want to implement some security measures and more complex workflows.
+For that, take a look at this [AWS Jenkins Whitepaper](https://d0.awsstatic.com/whitepapers/DevOps/Jenkins_on_AWS.pdf)
+
+---
+## Jenkins CI
+![](images/jenkins.png) <!-- .element: height="350px" -->
+
+---
+## Setting up a Jenkins instance on AWS
+**A couple of assumptions**
+ - Previous knowledge and AWS account correctly configured
+ - Previous knowledge on how to create an EC2 instance
+ - Previous knowledge on how to connect to the instance via SSH and HTTP
+ - AWS Security groups and rules correctly configured
+
+---
+
+## Step 1
 
 
 
