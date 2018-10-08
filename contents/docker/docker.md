@@ -4,15 +4,19 @@
 
 ## Requirements
 
- - Java 8
- - Maven
+ - Java 8 (For optional steps)
+ - Maven (For optional steps)
  - Git
- - Compatible IDE (IntelliJ or Eclipse)
+ - Compatible IDE (IntelliJ or Eclipse for optional steps)
  - Docker CE
 
 ---
 
-## Step 1
+# The following steps, 1 to 7 are optional
+
+---
+
+## Step 1 (IntelliJ based)
 Go to [this repo](https://github.com/jchacana/spring-boot-docker-demo), clone it with your favorite git tool, either a graphical git client or **CLI**
 
 ---
@@ -53,9 +57,13 @@ Go to [this repo](https://github.com/jchacana/spring-boot-docker-demo), clone it
 
 ---
 
-## Step 7
+## Step 7 (IntelliJ based)
  - Follow README.md file to compile, build and test
  - If you've executed every step, ee now have a local docker image ready to be run and tested
+
+---
+
+# Step 8: Integrate Docker and AWS
 
 ---
 
@@ -78,7 +86,7 @@ We go and create a new Docker image repository on AWS Elastic Container Registry
 
 ---
 
-## Step 9
+## Step 9 (Optional. Execute this in case you have followed steps 1 to 7)
 We'll re create our image with the data from our recently created repository:
  - Go to **pom.xml** file
     - Replace **docker.image.prefix** value with **repositoryUri** obtained when we created the repository
@@ -87,6 +95,22 @@ We'll re create our image with the data from our recently created repository:
  - Re run `` mvn dockerfile:build ``
 
 ---
+
+## Step 9.1 (Optional. Execute this in case you have NOT followed steps 1 to 7)
+Here we'll pull an image we'll use for the following steps
+
+- Execute: `` docker pull 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/mitrais/spring-boot-docker:latest  ``
+- This will pull a pre-existing image from our AWS Registry
+
+---
+
+## Step 9.2 (Optional. Execute this in case you have NOT followed steps 1 to 7)
+Here we'll tag the image in order to be pushed on step 10. User ``<your_username> ``
+- Execute `` docker tag  019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/mitrais/spring-boot-docker:latest 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_username>/spring-boot-docker:latest  ``
+
+
+---
+
 
 ## Step 10
 Now we'll push our image to our AWS ECR repository
@@ -105,19 +129,24 @@ We check on AWS ECR.
 ## Step 12
 Now, we'll delete our original image and test our newly uploaded image
  - `` docker image ls `` to get our image list. Identify your image, copy the image id
- - `` docker image rm <image_id>`` to delete the image. Add ``-f` if force is needed
+ - `` docker image rm <image_id>`` to delete the image. Add `` -f `` if force is needed
 
 ---
 
 ## Step 13
-Go to **docker-compose.yml** and replace `` image `` value with your image. It should look like:
-`` image: 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_user>/spring-boot-docker:latest ``
+Now we'll run our application
+- `` docker run -p 8080:8080 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_user>/spring-boot-docker``
 
 ---
 
 ## Step 14
-Test everything with `` docker-compose up ``. Your docker app should be up and running
+Your docker app should be up and running
 ![](images/spring-docker.png) <!-- .element: height="350px" -->
+
+---
+
+## Step 15
+Go to [http://localhost:8080](http://localhost:8080). You should see a **Hello World!** message
 
 ---
 
@@ -136,7 +165,6 @@ For that, take a look at this [AWS Jenkins Whitepaper](https://d0.awsstatic.com/
 ## Setting up a Jenkins instance on AWS
 **A couple of assumptions**
  - Previous knowledge and AWS account correctly configured
- - Previous knowledge on how to create an EC2 instance
  - Previous knowledge on how to connect to the instance via SSH and HTTP
  - AWS Security groups and rules correctly configured
 
