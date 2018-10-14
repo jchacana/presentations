@@ -170,7 +170,69 @@ For that, take a look at this [AWS Jenkins Whitepaper](https://d0.awsstatic.com/
 
 ---
 
+## Introduction
+This material will allow you prepare your own Execution Cluster with a couple of simple commands using CloudFormation. Follow it and you should have a running instance :-). This steps are based on [This tutorial](https://docs.aws.amazon.com/es_es/AWSGettingStartedContinuousDeliveryPipeline/latest/GettingStarted/CICD_Jenkins_Pipeline.html)
+
+---
+
 ## Step 1
+For this part of the tutorial, we first need to clone the following git repository
+
+`` https://github.com/jicowan/hello-world ``
+
+The files we're interested in are:
+ - ecs-cluster.template
+ - ecs-jenkins-demo.template
+
+---
+## Step 2
+Now we make sure to have AWS CLI on our local environment and configure our credentials with:
+
+``aws configure``
+
+---
+## Step 3
+Remember to retrieve the data from your ECR (Elastic Container Repository). If you don't remember it, use:
+
+`` aws ecr describe-repositories ``
+
+And take note of your repository's data
+
+---
+## Step 3.1
+Example:
+
+```json {
+    "repositories": [
+        {
+            "registryId": "019908562201", 
+            "repositoryName": "mitrais/spring-boot-docker", 
+            "repositoryArn": "arn:aws:ecr:ap-southeast-1:019908562201:repository/mitrais/spring-boot-docker", 
+            "createdAt": 1538979498.0, 
+            "repositoryUri": "019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/mitrais/spring-boot-docker"
+        }
+    ]
+}
+```
+
+---
+## Step 4
+Execute the following command. This will create your first cluster
+
+`` aws cloudformation create-stack --template-body file://ecs-cluster.template --stack-name EcsClusterStack --capabilities CAPABILITY_IAM --tags Key=Name,Value=ECS --region ap-southeast-1 --parameters ParameterKey=KeyName,ParameterValue=Javier-pem ParameterKey=EcsCluster,ParameterValue=getting-started ParameterKey=AsgMaxSize,ParameterValue=2 ``
+
+---
+
+## Step 5
+And execute this command to check status
+
+**DON'T EXECUTE STEP 6 UNLESS THIS COMMAND GIVES YOU CREATE_COMPLETE**
+
+`` aws cloudformation describe-stacks --stack-name EcsClusterStack --query 'Stacks[*].[StackId, StackStatus]' ``
+
+---
+
+
 
 
 
