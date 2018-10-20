@@ -63,66 +63,75 @@ Go to [this repo](https://github.com/jchacana/spring-boot-docker-demo), clone it
 
 ---
 
-# Step 8: Integrate Docker and AWS
+# Integrate with DockerHub
+
+For this following steps, we're integrating with the public Dockerhub (for simplicity).
+[Docker Hub](https://hub.docker.com/) allows you to store your created docker images and pull them for later use. 
+We'll create our own public repository and use **Webhooks** advanced feature in order to trigger a CI build later
 
 ---
 
-## Step 8.1 (Optional, assumes AWS CLI and Docker)
-
-Make sure you have AWS CLI and configure your credentials for AWS and Docker
-
- - `` aws configure ``
- - `` $(aws ecr get-login --no-include-email --region ap-southeast-1) ``
-    + This command will store your credentials info in ~/.docker/docker.json
+## Step 8: Create our repository
+Let's go to [Docker Hub](https://hub.docker.com/), then 
+**Create Repository** 
+You'll face a screen like this
+![](images/docker-hub1.png) <!-- .element: height="400px" -->
 
 ---
 
-## Step 8.2 (assumes AWS already set)
-We go and create a new Docker image repository on AWS Elastic Container Registry (ECR) service
+## Step 8.1: Create our repository
+Enter a meaningful name and confirm creation. Take note of the values
+![](images/docker-hub2.png) <!-- .element: height="400px" -->
 
- - `` aws ecr create-repository --repository-name <your_username>/spring-boot-docker ``
- - You'll find useful info in the output
-![](images/docker-repository.png) <!-- .element: height="250px" -->
 
----
 
-## Step 9 (Optional. Execute this in case you have followed steps 1 to 7)
+## Step 9 (Optional if you HAVE followed steps 1 to 7):  
 We'll re create our image with the data from our recently created repository:
  - Go to **pom.xml** file
     - Replace **docker.image.prefix** value with **repositoryUri** obtained when we created the repository
  - It should look like this
-    - `` <docker.image.prefix>019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_username></docker.image.prefix>  ``
- - Re run `` mvn dockerfile:build ``
+    - `` <docker.image.prefix>{INSERT_HERE_YOUR_USERNAME}</docker.image.prefix>  ``
+ - Re run 
+ ```console
+  mvn dockerfile:build 
+  ```
 
 ---
 
 ## Step 9.1 (Optional. Execute this in case you have NOT followed steps 1 to 7)
 Here we'll pull an image we'll use for the following steps
 
-- Execute: `` docker pull 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/mitrais/spring-boot-docker:latest  ``
-- This will pull a pre-existing image from our AWS Registry
+- Execute: 
+```console 
+docker pull jchacana/spring-boot-docker:0.0.1-SNAPSHOT  
+```
+- This will pull a pre-existing image from our Dockerhub
 
 ---
 
 ## Step 9.2 (Optional. Execute this in case you have NOT followed steps 1 to 7)
 Here we'll tag the image in order to be pushed on step 10. User ``<your_username> ``
-- Execute `` docker tag  019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/mitrais/spring-boot-docker:latest 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_username>/spring-boot-docker:latest  ``
+- Execute 
+```console 
+docker tag jchacana/spring-boot-docker:0.0.1-SNAPSHOT <your_username>/spring-boot-docker:0.0.1-SNAPSHOT  
+```
 
 
 ---
 
 
 ## Step 10
-Now we'll push our image to our AWS ECR repository
-- `` docker push 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_user>/spring-boot-docker:latest ``
-![](images/docker-push.png) <!-- .element: height="50px" -->
-![](images/docker-push2.png) <!-- .element: height="150px" -->
+Now we'll push our image to our Dockerhub repository
+```console 
+docker push <your_user>/spring-boot-docker:0.0.1-SNAPSHOT 
+```
+![](images/docker-hub-push.png) <!-- .element: height="50px" -->
 
 ---
 
 ## Step 11
-We check on AWS ECR. 
-![](images/aws-ecr.png) <!-- .element: height="350px" -->
+We check on Dockerhub. 
+![](images/docker-hub-repo.png) <!-- .element: height="350px" -->
 
 ---
 
@@ -135,7 +144,9 @@ Now, we'll delete our original image and test our newly uploaded image
 
 ## Step 13
 Now we'll run our application
-- `` docker run -p 8080:8080 019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/<your_user>/spring-boot-docker``
+```console 
+docker run -p 8080:8080 <your_user>/spring-boot-docker:0.0.1-SNAPSHOT
+```
 
 ---
 
@@ -171,69 +182,92 @@ For that, take a look at this [AWS Jenkins Whitepaper](https://d0.awsstatic.com/
 ---
 
 ## Introduction
-This material will allow you prepare your own Execution Cluster with a couple of simple commands using CloudFormation. Follow it and you should have a running instance :-). This steps are based on [This tutorial](https://docs.aws.amazon.com/es_es/AWSGettingStartedContinuousDeliveryPipeline/latest/GettingStarted/CICD_Jenkins_Pipeline.html)
+This material will allow you prepare your own CI server from a custom AMI prepared for this course. Please take note that other setups may require different configurations
 
 ---
-
 ## Step 1
-For this part of the tutorial, we first need to clone the following git repository
+We'll start by launching a new Jenkins instance from a sandbox AMI prepared for this case:
+First, we'll go to AWS EC2 console and select the following option
 
-`` https://github.com/jicowan/hello-world ``
-
-The files we're interested in are:
- - ecs-cluster.template
- - ecs-jenkins-demo.template
+![](images/aws-ami-1.png) <!-- .element: height="350px" -->
 
 ---
+
 ## Step 2
-Now we make sure to have AWS CLI on our local environment and configure our credentials with:
+On the next screen, we'll select **My AMIs** and then select the AMI called **mitrais-jenkins-sandbox-ami**
 
-``aws configure``
+![](images/aws-ami-2.png) <!-- .element: height="350px" -->
 
 ---
+
 ## Step 3
-Remember to retrieve the data from your ECR (Elastic Container Repository). If you don't remember it, use:
+We'll start configuring our instance based on this image. 
+First, select a **General Purpose --> t2.micro** (marked as **Free tier eligible**). After that, for our purposes, click on **Next**
 
-`` aws ecr describe-repositories ``
-
-And take note of your repository's data
-
----
-## Step 3.1
-Example:
-
-```json {
-    "repositories": [
-        {
-            "registryId": "019908562201", 
-            "repositoryName": "mitrais/spring-boot-docker", 
-            "repositoryArn": "arn:aws:ecr:ap-southeast-1:019908562201:repository/mitrais/spring-boot-docker", 
-            "createdAt": 1538979498.0, 
-            "repositoryUri": "019908562201.dkr.ecr.ap-southeast-1.amazonaws.com/mitrais/spring-boot-docker"
-        }
-    ]
-}
-```
+![](images/aws-ami-3.png) <!-- .element: height="350px" -->
 
 ---
 ## Step 4
-Execute the following command. This will create your first cluster
+In this screen, we'll set a VPC. You can select whichever you want. In my case, I'm going with CDC-Bootcamp-VPC.
+Also, make sure you select **Enable** on the **Auto-assign Public IP** option. After that, click **Review and Launch**
 
-`` aws cloudformation create-stack --template-body file://ecs-cluster.template --stack-name EcsClusterStack --capabilities CAPABILITY_IAM --tags Key=Name,Value=ECS --region ap-southeast-1 --parameters ParameterKey=KeyName,ParameterValue=Javier-pem ParameterKey=EcsCluster,ParameterValue=getting-started ParameterKey=AsgMaxSize,ParameterValue=2 ``
+![](images/aws-ami-6.png) <!-- .element: height="350px" -->
 
 ---
 
 ## Step 5
-And execute this command to check status
+Here we can see we don't have a **Security Group** selected. Let's click on **Edit security groups**
 
-**DON'T EXECUTE STEP 6 UNLESS THIS COMMAND GIVES YOU CREATE_COMPLETE**
-
-`` aws cloudformation describe-stacks --stack-name EcsClusterStack --query 'Stacks[*].[StackId, StackStatus]' ``
+![](images/aws-ami-7.png) <!-- .element: height="350px" -->
 
 ---
 
 
+## Step 5.1
+Let's go to the **Security Groups** section, then **Edit security groups**. Before clicking, you may see that your instance is **Open to the world**. This means, your aws ec2 machine has the **SSH** port (22) open to 0.0.0.0/0, which means, anyone with the default credentials of a CentOS machine can take control of this server. This is particularly important because this is a serious breach that can be taken by an attacker to execute some malicious code from your server
 
+![](images/aws-ami-5.png) <!-- .element: height="300px" -->
+
+---
+
+## Step 7
+In this screen we either create a new security group or use an existing one. In my case, I'm going to reuse a previously created group (**mitrais-jenkins**)
+
+![](images/aws-ami-8.png) <!-- .element: height="300px" -->
+
+---
+
+## Step 7.1
+
+In a security group you define inbound and outbound rules. This acts like a kind of firewall.
+For example, the **mitrais-jenkins** has some very strict and specific rules. It only exposes ports 80, 8080 and 22 to a specific IP (my public IP). Try creating your own security rules and discuss with your managers and colleagues what would be the best way to achieve it. 
+Finally, click on **Review and Launch**
+
+![](images/aws-ami-9.png) <!-- .element: height="300px" -->
+
+---
+## Step 8
+You'll be prompted with this screen, where you have to select an existing **Key Pair** (make sure you have the .pem file), create a new one or proceed without a key-pair. Be warned that proceeding without a key-pair implies a serious security breach. 
+Finally, click on **Launch Instances**.
+
+![](images/aws-ami-10.png) <!-- .element: height="300px" -->
+
+
+## Step 9
+Check on **Instances** menu the status of your instance. Wait until it finishes **Initializing**
+
+![](images/aws-ami-10.png) <!-- .element: height="300px" -->
+
+## Step 10
+If you select your Instance, you'll notice it provides some useful information, like **Public DNS** for example.
+Take note of this value, copy and paste it your browser and add port 8080. 
+Welcome to jenkins. 
+User: admin
+Password: admin
+
+---
+
+You can now start creating your own tasks
 
 
 
