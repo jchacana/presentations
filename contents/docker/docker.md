@@ -256,7 +256,7 @@ Finally, click on **Launch Instances**.
 ## Step 9
 Check on **Instances** menu the status of your instance. Wait until it finishes **Initializing**
 
-![](images/aws-ami-10.png) <!-- .element: height="300px" -->
+![](images/aws-ami-11.png) <!-- .element: height="300px" -->
 
 ## Step 10
 If you select your Instance, you'll notice it provides some useful information, like **Public DNS** for example.
